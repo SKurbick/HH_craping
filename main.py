@@ -23,15 +23,39 @@ def get_page(page=0):
         'text': 'NAME:python',  # Текст фильтра. В имени должно быть слово "Аналитик"
         'area': 1,  # Поиск ощуществляется по вакансиям города Москва
         'page': page,  # Индекс страницы поиска на HH
-        'per_page': 1  # Кол-во вакансий на 1 странице
+        'per_page': 100  # Кол-во вакансий на 1 странице
     }
 
     req = requests.get('https://api.hh.ru/vacancies', params)  # Посылаем запрос к API
     data = req.content.decode()  # Декодируем его ответ, чтобы Кириллица отображалась корректно
     req.close()
-    pprint( data)
+    return data
 
-get_page(1)
+# get_page(0)
+# # jsObj = json.loads(get_page(2))
+# # print(jsObj)
+# Считываем первые 2000 вакансий
+for page in range(0, 20):
 
+    # Преобразуем текст ответа запроса в справочник Python
+    jsObj = json.loads(get_page(page))
 
-print('Старницы поиска собраны')
+    # Сохраняем файлы в папку {путь до текущего документа со скриптом}\docs\pagination
+    # Определяем количество файлов в папке для сохранения документа с ответом запроса
+    # Полученное значение используем для формирования имени документа
+    nextFileName = '/home/malkolmz/Рабочий стол/docs/pagination/{}.json'.format(len(os.listdir('/home/malkolmz/Рабочий стол/docs/pagination/')))
+
+    # Создаем новый документ, записываем в него ответ запроса, после закрываем
+    f = open(nextFileName, mode='w', encoding='utf8')
+    f.write(json.dumps(jsObj, ensure_ascii=False))
+    f.close()
+
+    # Проверка на последнюю страницу, если вакансий меньше 2000
+    if (jsObj['pages'] - page) <= 1:
+        break
+
+    # Необязательная задержка, но чтобы не нагружать сервисы hh, оставим. 5 сек мы может подождать
+    time.sleep(0.25)
+
+print('Страницы поиска собраны')
+# /home/malkolmz/"Рабочий стол"/docs
